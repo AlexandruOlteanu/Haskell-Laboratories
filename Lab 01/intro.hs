@@ -26,28 +26,32 @@ Expresia `undefined` are orice tip dar nu poate fi evaluată.
 
 -- if-then-else
 reverseList :: [a] -> [a]
-reverseList l = undefined
+reverseList l = if null l then l else reverseList (tail l) ++ [head l]
 
 -- pattern matching
 reverseList2 :: [a] -> [a]
 reverseList2 [] = []
-reverseList2 (x : xl) = undefined
+reverseList2 (x : xl) = reverseList (xl) ++ [x]
 
 -- case of
 reverseList3 :: [a] -> [a]
-reverseList3 l = undefined
+reverseList3 l = case l of 
+                [] -> [] 
+                (x : xl) -> reverseList xl ++ [x]
 
 -- gărzi
 reverseList4 :: [a] -> [a]
-reverseList4 l = undefined
+reverseList4 l
+        | null l = []
+        | otherwise = reverseList (tail l) ++ [head l]
 
 -- foldl
 reverseList5 :: [a] -> [a]
-reverseList5 l = undefined
+reverseList5 l = foldl (\ans x -> x : ans) [] l 
 
 -- foldr
 reverseList6 :: [a] -> [a]
-reverseList6 l = undefined
+reverseList6 l = foldr (\x ans -> ans ++ [x]) [] l 
 
 -- Verificare: check1
 check1 :: TestData
@@ -78,20 +82,27 @@ check1 = tests_ 1
 
 -- if-then-else
 numToBase :: Integer -> Integer -> [Integer]
-numToBase n b = undefined
+numToBase n b = if n == 0 then 
+                    []
+                else 
+                    (numToBase (quot n b) b) ++ [mod n b]
 
 -- pattern matching
 numToBase2 :: Integer -> Integer -> [Integer]
 numToBase2 0 _ = []
-numToBase2 n b = undefined
+numToBase2 n b = (numToBase (quot n b) b) ++ [mod n b]
 
 -- gărzi
 numToBase3 :: Integer -> Integer -> [Integer]
-numToBase3 n b = undefined
+numToBase3 n b
+            | n == 0 = []
+            | otherwise = (numToBase (quot n b) b) ++ [mod n b]
 
 -- case of
 numToBase4 :: Integer -> Integer -> [Integer]
-numToBase4 n b = undefined
+numToBase4 n b = case n of 
+            0 -> []
+            _ -> (numToBase (quot n b) b) ++ [mod n b]
 
 -- Verificare: check2
 check2 :: TestData
@@ -117,7 +128,13 @@ check2 = tests_ 2
 -}
 
 removeDuplicatesLeft :: (Eq a) => [a] -> [a]
-removeDuplicatesLeft l = undefined
+removeDuplicatesLeft l = reverse (foldl (\ans x -> 
+                if (elem x ans) then 
+                    ans 
+                else 
+                    (x : ans)
+                )
+                [] l) 
 
 -- Verificare: check3
 check3 :: TestData
@@ -136,7 +153,12 @@ check3 = tests_ 3
 -}
 
 removeDuplicatesRight :: (Eq a) => [a] -> [a]
-removeDuplicatesRight l = undefined
+removeDuplicatesRight l = foldr (\x ans -> 
+                (if elem x ans then
+                    ans 
+                 else 
+                    (x : ans)
+                )) [] l 
 
 -- Verificare: check4
 check4 :: TestData
@@ -167,13 +189,30 @@ check4 = tests_ 4
 computeLength :: ((Double, Double), (Double, Double)) 
             -> (((Double, Double), (Double, Double)) -> (Double, Double)) 
             -> (((Double, Double), (Double, Double)) -> (Double, Double)) -> Double
-computeLength getLineSegment getStartPoint getEndPoint = undefined
+computeLength getLineSegment getStartPoint getEndPoint = 
+                                                         let 
+                                                            segment = getLineSegment
+                                                            start = getStartPoint segment
+                                                            stop = getEndPoint segment 
+                                                            x1 = fst start 
+                                                            y1 = snd start 
+                                                            x2 = fst stop
+                                                            y2 = snd stop
+                                                        in sqrt ((x1 - x2) ** 2 + (y1 - y2) ** 2)
 
 -- cu where
 computeLength2 :: ((Double, Double), (Double, Double)) 
             -> (((Double, Double), (Double, Double)) -> (Double, Double)) 
             -> (((Double, Double), (Double, Double)) -> (Double, Double)) -> Double
-computeLength2 getLineSegment getStartPoint getEndPoint = undefined
+computeLength2 getLineSegment getStartPoint getEndPoint = sqrt ((x1 - x2) ** 2 + (y1 - y2) ** 2)
+                                                        where 
+                                                           segment = getLineSegment
+                                                           start = getStartPoint segment
+                                                           stop = getEndPoint segment 
+                                                           x1 = fst start 
+                                                           y1 = snd start 
+                                                           x2 = fst stop
+                                                           y2 = snd stop 
 
 -- Verificare: check5
 check5 :: TestData
@@ -208,15 +247,35 @@ check5 = tests_ 5
 -}
 
 merge :: [Int] -> [Int] -> [Int]
-merge [] l = undefined
-merge l [] = undefined
-merge (x1:l1) (x2:l2) = undefined
+merge [] l = l 
+merge l [] = l
+merge (x1:l1) (x2:l2) = if x1 <= x2 then 
+                            (x1 : (merge l1 (x2 : l2)))
+                        else 
+                            (x2 : (merge (x1 : l1) l2 ))
 
 mergeSort :: [Int] -> [Int]
-mergeSort lst = undefined
+mergeSort lst = 
+            let 
+                computeHalf = (\f l -> (f (quot (length l) 2) l))
+                fstHalf = (\l -> (computeHalf take l))
+                sndHalf = (\l -> (computeHalf drop l))
+            in 
+                case lst of 
+                    [] -> []
+                    [x] -> lst 
+                    _ -> merge (mergeSort (fstHalf lst)) (mergeSort (sndHalf lst))
 
 mergeSort2 :: [Int] -> [Int]
-mergeSort2 lst = undefined
+mergeSort2 lst = case lst of 
+                    [] -> []
+                    [x] -> lst 
+                    _ -> merge (mergeSort (fstHalf lst)) (mergeSort (sndHalf lst))
+                where
+                    computeHalf = (\f l -> (f (quot (length l) 2) l))
+                    fstHalf = (\l -> (computeHalf take l))
+                    sndHalf = (\l -> (computeHalf drop l))
+                
 
 check6 :: TestData
 check6 = tests_ 6
@@ -248,10 +307,16 @@ check6 = tests_ 6
 -}
 
 playerWins :: Int -> Bool
-playerWins candies = undefined
-
+playerWins candies = 
+                let 
+                    player = (\candies -> (candies > 0) && ((not (opponent (candies - 1))) || (not (opponent (candies - 2)))))
+                    opponent = (\candies -> (candies > 1) && ((not (player (candies - 2))) || (not (player (candies - 3)))))
+                in (player candies)
 playerWins2 :: Int -> Bool
-playerWins2 candies = undefined
+playerWins2 candies = (player candies)
+                    where 
+                        player = (\candies -> (candies > 0) && ((not (opponent (candies - 1))) || (not (opponent (candies - 2)))))
+                        opponent = (\candies -> (candies > 1) && ((not (player (candies - 2))) || (not (player (candies - 3)))))
 
 check7 :: TestData
 check7 = tests_ 7
